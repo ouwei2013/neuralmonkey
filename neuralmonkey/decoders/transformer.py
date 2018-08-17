@@ -214,6 +214,8 @@ class TransformerDecoder(AutoregressiveDecoder):
         self._variable_scope.set_initializer(tf.variance_scaling_initializer(
             mode="fan_avg", distribution="uniform"))
 
+        if reuse:
+            self._variable_scope.reuse_variables()
         log("Decoder cost op: {}".format(self.cost))
         self._variable_scope.reuse_variables()
         log("Runtime logits: {}".format(self.runtime_logits))
