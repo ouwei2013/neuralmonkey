@@ -1,7 +1,9 @@
 from typing import Callable, List
 
 import tensorflow as tf
+# pylint: disable=no-name-in-module
 from tensorflow.python.framework import ops
+# pylint: enable=no-name-in-module
 from typeguard import check_argument_types
 
 from neuralmonkey.dataset import Dataset
@@ -67,9 +69,11 @@ class Classifier(ModelPart):
         self.adversarial = adversarial
     # pylint: enable=too-many-arguments
 
+    # pylint: disable=no-self-use
     @tensor
-    def targets(self) -> tf.Tensor:
+    def targets(self) -> List[tf.Tensor]:
         return [tf.placeholder(tf.int32, [None], "targets")]
+    # pylint: enable=no-self-use
 
     @tensor
     def mlp_input(self) -> tf.Tensor:
@@ -88,9 +92,11 @@ class Classifier(ModelPart):
 
     @tensor
     def loss_with_gt_ins(self) -> tf.Tensor:
+        # pylint: disable=no-member,unsubscriptable-object
         return tf.reduce_mean(
             tf.nn.sparse_softmax_cross_entropy_with_logits(
                 logits=self.mlp.logits, labels=self.targets[0]))
+        # pylint: enable=no-member,unsubscriptable-object
 
     @property
     def loss_with_decoded_ins(self) -> tf.Tensor:
@@ -104,6 +110,7 @@ class Classifier(ModelPart):
 
         return self.loss_with_gt_ins
 
+    # pylint: disable=no-member
     @tensor
     def decoded_seq(self) -> tf.Tensor:
         return tf.expand_dims(self.mlp.classification, 0)
@@ -123,6 +130,7 @@ class Classifier(ModelPart):
     @property
     def runtime_loss(self):
         return self.loss_with_decoded_ins
+    # pylint: enable=no-member
 
     @property
     def decoded(self):
@@ -135,7 +143,9 @@ class Classifier(ModelPart):
         if sentences is not None:
             label_tensors, _ = self.vocabulary.sentences_to_tensor(
                 list(sentences), self.max_output_len)
+            # pylint: disable=unsubscriptable-object
             fd[self.targets[0]] = label_tensors[0]
+            # pylint: enable=unsubscriptable-object
 
         return fd
 
@@ -145,9 +155,11 @@ def _reverse_gradient(x: tf.Tensor) -> tf.Tensor:
 
     grad_name = "gradient_reversal_{}".format(x.name)
 
+    # pylint: disable=unused-variable,invalid-name,unused-argument
     @ops.RegisterGradient(grad_name)
     def _flip_gradients(op, grad):
-        return [tf.negative(grad) ]
+        return [tf.negative(grad)]
+    # pylint: enable=unused-variable,invalid-name,unused-argument
 
     from neuralmonkey.experiment import Experiment
     graph = Experiment.get_current().graph
